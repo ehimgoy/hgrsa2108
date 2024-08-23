@@ -1,13 +1,57 @@
-on: push
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
 jobs:
-  build-node:
+  build:
     runs-on: ubuntu-latest
-    container: node:16
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
     steps:
-      - run: node --version
-      - run: npm --version
-      - uses: actions/checkout@v3
-      - run: npm install 
-      - run: node index.js
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Install SonarQube Scanner
+      run: npm install -g sonarqube-scanner
+
+    - name: SonarQube Scan
+      env:
+        #SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: |
+        sonar-scanner \
+        -Dsonar.sources=. \
+        -Dsonar.host.url=$SONAR_HOST_URL \
+        -Dsonar.login=$SONAR_TOKEN
+
+
+
+# on: push
+# jobs:
+#   build-node:
+#     runs-on: ubuntu-latest
+#     container: node:16
+#     steps:
+#       - run: node --version
+#       - run: npm --version
+#       - uses: actions/checkout@v3
+#       - run: npm install 
+#       - run: node index.js
 
       
