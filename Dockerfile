@@ -3,10 +3,8 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install --ignore-scripts
 COPY index.js .
-EXPOSE 80
-RUN addgroup -S himgoyal \
-    && adduser -S himgoyal -G himgoyal
-
+RUN groupadd -r himgoyal && useradd -r -g himgoyal himgoyal
+RUN chown -R himgoyal:himgoyal /usr/src/app
 USER himgoyal
-
+EXPOSE 80
 CMD [ "node", "index.js" ]
